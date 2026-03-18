@@ -25,6 +25,13 @@ Thumbs.db
 .idea/
 # \\\\\\\\\\\\\\\\\\\\\\\\\ Claude Recommends\\\\\
 
+# ////////////// GPT Recommends
+__pycache__/
+data/*.csv
+models/*.pkl
+.env
+# ////////////// GPT Recommends
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

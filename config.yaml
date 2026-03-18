@@ -1,0 +1,24 @@
+# config.yaml
+# Plug-and-play BTC 5-min bot
+markets:
+  # Replace this slug with the latest active BTC 5-min market
+  default_market: "btc-updown-5m-1773817200"
+  api_base: "https://api.polymarket.com"
+
+data:
+  market_csv: "data/market_data.csv"
+  features_csv: "data/features.csv"
+  trades_csv: "data/trades.csv"
+
+models:
+  model_path: "models/model.pkl"
+
+training:
+  model_name: "random_forest"
+  test_size: 0.2
+  random_state: 42
+
+trading:
+  starting_cash: 10000.0
+  buy_threshold: 0.55
+  sell_threshold: 0.5
