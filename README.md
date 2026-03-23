@@ -11,7 +11,7 @@ A **paper trading bot for Bitcoin (BTC)** using 5-minute markets from Polymarket
 - Predict direction (UP / DOWN) using ML models (Random Forest by default)
 - Paper trading simulation with cash, position, and portfolio value
 - Live dashboard with predictions, trades, and portfolio chart
-- Fully plug-and-play for BTC 5-min markets
+- Fully plug-and-play for BTC 5-min marketsCsAA
 
 ---
 
