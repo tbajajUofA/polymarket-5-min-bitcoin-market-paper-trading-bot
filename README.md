@@ -179,6 +179,129 @@ streamlit run app.py
 
 ---
 
+## Rolling BTC 5-Minute Markets
+
+The bot now discovers Polymarket's rolling BTC 5-minute markets automatically.
+You do not need to paste or update market slugs by hand.
+
+```python
+from src.fetch import fetch_current_market, fetch_next_market, discover_5m_markets
+
+current_market = fetch_current_market("btc")
+next_market = fetch_next_market("btc")
+upcoming_markets = discover_5m_markets("btc", periods=12)
+```
+
+Polymarket's BTC market slugs follow this pattern:
+
+```text
+btc-updown-5m-<unix_timestamp_floored_to_5_minutes>
+```
+
+`PaperTrader` uses `market_mode="next"` by default, so paper trading targets the
+next available 5-minute market instead of forcing you to catch the current
+window at exactly the right moment.
+
+---
+
+## Getting Training Data
+
+Fetch 5-minute BTC candles from the Binance public API and build feature rows:
+
+```bash
+python -m src.data_fetch --source binance --symbol BTCUSDT --interval 5m --start 2026-01-01
+```
+
+If Binance.com is blocked in your region, use the Binance US endpoint:
+
+```bash
+python -m src.data_fetch --source binance_us --symbol BTCUSDT --interval 5m --start 2026-01-01
+```
+
+This writes:
+
+- `data/market_data.csv` — raw OHLCV candles
+- `data/features.csv` — engineered model features
+
+Train the model from the fetched candles:
+
+```bash
+python -m src.train --input data/market_data.csv
+```
+
+Training saves an ensemble artifact to `models/model.pkl`. The Streamlit app
+loads that file at runtime and does not retrain on page load. To refresh the
+model after fetching newer candles, rerun:
+
+```bash
+python -m src.train --input data/market_data.csv --model-name ensemble
+```
+
+The saved artifact includes:
+
+- baseline logistic regression
+- random forest
+- extra trees
+- histogram gradient boosting
+- recent-window random forest
+- test metrics and model probabilities for dashboard display
+
+## Continuous Data Collection
+
+Run one collection cycle to append the latest BTC ticker snapshot, merge recent
+5-minute candles into `data/market_data.csv`, store current/next Polymarket
+implied probabilities, and rebuild `data/features.csv`:
+
+```bash
+python -m src.collector --once
+```
+
+Run continuously:
+
+```bash
+python -m src.collector --poll-seconds 60
+```
+
+Optionally retrain the saved ensemble every few hours:
+
+```bash
+python -m src.collector --poll-seconds 60 --retrain-minutes 180
+```
+
+The collector writes:
+
+- `data/live_ticker.csv` — timestamped BTC ticker snapshots
+- `data/polymarket_markets.csv` — non-leaky current/next market snapshots collected going forward
+- `data/trader_signals.csv` — public-wallet trade flow and smart-money aggregate features
+- `data/trader_leaders.csv` — hashed public-wallet summaries used for trader-flow diagnostics
+- `data/market_data.csv` — deduplicated 5-minute candles
+- `data/features.csv` — regenerated feature rows
+- `models/model.pkl` — refreshed only when `--retrain-minutes` is set
+
+To expand BTC candle history back to January 2026:
+
+```bash
+python -m src.data_fetch --source binance --symbol BTCUSDT --interval 5m --start 2026-01-01 --end 2026-04-30
+```
+
+Historical Polymarket markets should not be blindly backfilled after resolution:
+closed markets may expose final outcomes rather than pre-close prices, which
+would leak the answer into training. The collector records Polymarket prices
+live from now onward so those features are safe.
+
+Trader-flow features use public Polymarket wallet addresses only as anonymous
+addresses. The dashboard displays hashed wallet identifiers, not profile names
+or personal identity guesses.
+
+For deeper prediction-market research, Jon Becker's
+[`prediction-market-analysis`](https://github.com/Jon-Becker/prediction-market-analysis)
+project provides a large Polymarket/Kalshi dataset and indexers. That dataset is
+excellent for market microstructure research, but the compressed archive is very
+large, so this bot starts with lightweight BTC OHLCV candles and can ingest that
+archive later if needed.
+
+---
+
 ## Notes for Later
 
 - `fetch.py` uses slug-based fetching → ensures 5-min markets are always correctly retrieved

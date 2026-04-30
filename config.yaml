@@ -9,14 +9,37 @@ data:
   market_csv: "data/market_data.csv"
   features_csv: "data/features.csv"
   trades_csv: "data/trades.csv"
+  ticker_csv: "data/live_ticker.csv"
+  polymarket_csv: "data/polymarket_markets.csv"
+  trader_signals_csv: "data/trader_signals.csv"
+  trader_leaders_csv: "data/trader_leaders.csv"
+
+data_sources:
+  btc_ohlcv:
+    provider: "binance"
+    fallback_provider: "binance_us"
+    symbol: "BTCUSDT"
+    interval: "5m"
 
 models:
   model_path: "models/model.pkl"
 
 training:
-  model_name: "random_forest"
+  model_name: "ensemble"
+  horizon_periods: 1
   test_size: 0.2
   random_state: 42
+
+signals:
+  edge_threshold: 0.03
+
+collector:
+  poll_seconds: 60
+  candle_limit: 300
+  retrain_minutes: null
+  polymarket_csv: "data/polymarket_markets.csv"
+  trader_signals_csv: "data/trader_signals.csv"
+  trader_leaders_csv: "data/trader_leaders.csv"
 
 trading:
   starting_cash: 10000.0
