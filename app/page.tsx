@@ -9,11 +9,13 @@ import type {
   WalletSummary,
 } from "@/lib/polymarket";
 
+// The browser receives this shape from app/api/markets/route.ts.
 type MarketResponse = {
   markets?: MarketResult[];
   error?: string;
 };
 
+// The browser receives this shape from app/api/trades/route.ts.
 type TradeResponse = {
   trades?: TradeRow[];
   summary?: FlowSummary;
@@ -22,6 +24,7 @@ type TradeResponse = {
   error?: string;
 };
 
+// Used before the first trade response arrives and after empty/error responses.
 const emptySummary: FlowSummary = {
   tradeCount: 0,
   walletCount: 0,
@@ -36,26 +39,42 @@ const emptySummary: FlowSummary = {
   latestTrade: null,
 };
 
+/**
+ * Main dashboard component.
+ *
+ * Responsibilities:
+ * - Search Polymarket markets.
+ * - Track the selected market.
+ * - Poll recent trades for that market.
+ * - Render flow metrics, wallet aggregates, and simple distributions.
+ */
 export default function Home() {
+  // Sidebar/search state.
   const [query, setQuery] = useState("bitcoin");
   const [activeOnly, setActiveOnly] = useState(true);
   const [markets, setMarkets] = useState<MarketResult[]>([]);
   const [selectedConditionId, setSelectedConditionId] = useState("");
+
+  // Trade-flow data returned from /api/trades.
   const [trades, setTrades] = useState<TradeRow[]>([]);
   const [summary, setSummary] = useState<FlowSummary>(emptySummary);
   const [wallets, setWallets] = useState<WalletSummary[]>([]);
   const [distributions, setDistributions] = useState<DistributionSummary[]>([]);
+
+  // Loading and error state stays local because this is currently a single page.
   const [marketError, setMarketError] = useState("");
   const [tradeError, setTradeError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingTrades, setIsLoadingTrades] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
+  // Keep selection stable across searches, but fall back to the first result.
   const selectedMarket = useMemo(
     () => markets.find((market) => market.conditionId === selectedConditionId) ?? markets[0],
     [markets, selectedConditionId],
   );
 
+  // Fetch market candidates from the local Next API route.
   const search = useCallback(async () => {
     setIsSearching(true);
     setMarketError("");
@@ -79,6 +98,7 @@ export default function Home() {
     }
   }, [activeOnly, query]);
 
+  // Fetch the latest public trades plus server-side aggregates for one market.
   const loadTrades = useCallback(async () => {
     if (!selectedMarket?.conditionId) return;
     setIsLoadingTrades(true);
@@ -100,14 +120,17 @@ export default function Home() {
     }
   }, [selectedMarket?.conditionId]);
 
+  // Run a market search on first render and whenever search inputs change.
   useEffect(() => {
     void search();
   }, [search]);
 
+  // Load trade data when the selected market changes.
   useEffect(() => {
     void loadTrades();
   }, [loadTrades]);
 
+  // Poll trades every 10 seconds when auto-refresh is enabled.
   useEffect(() => {
     if (!autoRefresh) return;
     const timer = window.setInterval(() => {
@@ -116,6 +139,7 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [autoRefresh, loadTrades]);
 
+  // This client-side read is intentionally simple until wallet history exists.
   const shadow = useMemo(() => buildShadowSignal(wallets, summary), [summary, wallets]);
 
   return (
@@ -293,6 +317,7 @@ export default function Home() {
   );
 }
 
+/** Render one dashboard KPI tile. */
 function Metric({
   label,
   value,
@@ -310,6 +335,7 @@ function Metric({
   );
 }
 
+/** Shared bordered panel wrapper for tables and charts. */
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="panel">
@@ -319,6 +345,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+/** Render a small proportional bar chart without adding a charting library. */
 function BarList({ rows }: { rows: { label: string; value: number }[] }) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
@@ -336,6 +363,7 @@ function BarList({ rows }: { rows: { label: string; value: number }[] }) {
   );
 }
 
+/** Aggregate trade value by outcome for the Outcome Flow panel. */
 function outcomeBars(trades: TradeRow[]) {
   const totals = new Map<string, number>();
   for (const trade of trades) {
@@ -348,6 +376,13 @@ function outcomeBars(trades: TradeRow[]) {
     .slice(0, 8);
 }
 
+/**
+ * Produce a cautious "shadow watch" read.
+ *
+ * This is not a prediction model yet. It only asks whether the largest wallets
+ * dominate recent value and whether their aggregate pressure is positive or
+ * negative. Future versions should use wallet history and backtests.
+ */
 function buildShadowSignal(wallets: WalletSummary[], summary: FlowSummary) {
   const top = wallets.slice(0, 5);
   if (!top.length) {
@@ -364,6 +399,7 @@ function buildShadowSignal(wallets: WalletSummary[], summary: FlowSummary) {
   };
 }
 
+/** Format numeric values as compact USD strings for dashboard display. */
 function formatMoney(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return "N A";
   return new Intl.NumberFormat("en-US", {
@@ -373,6 +409,7 @@ function formatMoney(value: number | null | undefined): string {
   }).format(value);
 }
 
+/** Format decimals as percentages for buy share and concentration. */
 function formatPercent(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return "N A";
   return new Intl.NumberFormat("en-US", {
@@ -381,6 +418,7 @@ function formatPercent(value: number | null | undefined): string {
   }).format(value);
 }
 
+/** Format ISO timestamps into local time for the trade tape. */
 function formatTime(value: string | null): string {
   if (!value) return "N A";
   return new Intl.DateTimeFormat("en-US", {

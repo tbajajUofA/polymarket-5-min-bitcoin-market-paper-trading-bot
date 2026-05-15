@@ -1,4 +1,5 @@
 :root {
+  /* Core theme tokens used throughout the dashboard. */
   --bg: #07100d;
   --panel: #0d1b16;
   --panel-2: #11251f;
@@ -13,10 +14,12 @@
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
 }
 
+/* Predictable sizing for all UI elements. */
 * {
   box-sizing: border-box;
 }
 
+/* Page-level typography and background. */
 html,
 body {
   min-height: 100%;
@@ -37,12 +40,14 @@ button {
   cursor: pointer;
 }
 
+/* Main two-column app layout: sidebar plus analyzer content. */
 .shell {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
   min-height: 100vh;
 }
 
+/* Left search/control rail. */
 .sidebar {
   position: sticky;
   top: 0;
@@ -56,6 +61,7 @@ button {
   border-right: 1px solid var(--line);
 }
 
+/* Small uppercase label used above major sections. */
 .eyebrow {
   margin: 0 0 8px;
   color: var(--accent);
@@ -72,6 +78,7 @@ p {
   margin-top: 0;
 }
 
+/* Heading scale for the compact dashboard layout. */
 h1 {
   margin-bottom: 0;
   font-size: 2rem;
@@ -90,6 +97,7 @@ h3 {
   font-size: 1rem;
 }
 
+/* Search input wrapper. */
 .field {
   display: grid;
   gap: 8px;
@@ -98,6 +106,7 @@ h3 {
   font-weight: 700;
 }
 
+/* Text search input. */
 .field input {
   width: 100%;
   min-height: 42px;
@@ -113,6 +122,7 @@ h3 {
   border-color: var(--accent);
 }
 
+/* Checkbox/toggle rows. */
 .check {
   display: flex;
   align-items: center;
@@ -127,6 +137,7 @@ h3 {
   accent-color: var(--accent);
 }
 
+/* Shared button/link button sizing. */
 .primary,
 .secondary,
 .external {
@@ -138,11 +149,13 @@ h3 {
   text-decoration: none;
 }
 
+/* Primary action button. */
 .primary {
   color: #03140d;
   background: var(--accent);
 }
 
+/* Secondary buttons and external links. */
 .secondary,
 .external {
   color: var(--text);
@@ -156,11 +169,13 @@ h3 {
   opacity: 0.6;
 }
 
+/* Scrollable market search result list. */
 .market-list {
   display: grid;
   gap: 8px;
 }
 
+/* One selectable market result. */
 .market-item {
   display: grid;
   gap: 6px;
@@ -173,6 +188,7 @@ h3 {
   border-radius: 6px;
 }
 
+/* Clamp long market titles inside search results. */
 .market-item span {
   display: -webkit-box;
   overflow: hidden;
@@ -186,11 +202,13 @@ h3 {
   color: var(--muted);
 }
 
+/* Highlight the selected market. */
 .market-item.active {
   background: var(--panel-2);
   border-color: var(--accent);
 }
 
+/* Main dashboard content column. */
 .content {
   display: grid;
   gap: 18px;
@@ -198,6 +216,7 @@ h3 {
   padding: 30px;
 }
 
+/* Shared panel visual treatment. */
 .market-header,
 .signal-row,
 .panel,
@@ -209,6 +228,7 @@ h3 {
   box-shadow: var(--shadow);
 }
 
+/* Selected market title and external link row. */
 .market-header {
   display: flex;
   align-items: flex-start;
@@ -217,17 +237,20 @@ h3 {
   padding: 20px;
 }
 
+/* Top KPI grid. */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 
+/* Individual KPI card. */
 .metric {
   min-height: 92px;
   padding: 16px;
 }
 
+/* KPI label. */
 .metric span {
   display: block;
   margin-bottom: 12px;
@@ -236,6 +259,7 @@ h3 {
   font-weight: 800;
 }
 
+/* KPI value. */
 .metric strong {
   color: var(--accent);
   font-size: 1.35rem;
@@ -253,6 +277,7 @@ h3 {
   color: var(--accent);
 }
 
+/* Shadow-read callout row. */
 .signal-row {
   display: flex;
   align-items: center;
@@ -266,6 +291,7 @@ h3 {
   font-size: 1.2rem;
 }
 
+/* Confidence badge. */
 .confidence {
   min-width: 96px;
   padding: 10px 12px;
@@ -290,6 +316,7 @@ h3 {
   background: var(--panel);
 }
 
+/* Main table panels: trade tape and wallet leaderboard. */
 .two-column {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
@@ -300,11 +327,13 @@ h3 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Generic dashboard panel. */
 .panel {
   min-width: 0;
   padding: 18px;
 }
 
+/* Keeps large tables readable without stretching the whole page. */
 .table-wrap {
   overflow: auto;
   max-height: 540px;
@@ -312,6 +341,7 @@ h3 {
   border-radius: 6px;
 }
 
+/* Shared table styles. */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -325,6 +355,7 @@ td {
   border-bottom: 1px solid var(--line-soft);
 }
 
+/* Sticky table headers for long trade/wallet lists. */
 th {
   position: sticky;
   top: 0;
@@ -334,11 +365,13 @@ th {
   background: #0b1914;
 }
 
+/* Wallet hash monospace text. */
 .mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.82rem;
 }
 
+/* BUY/SELL badges. */
 .pill {
   display: inline-flex;
   justify-content: center;
@@ -359,6 +392,7 @@ th {
   background: var(--warn);
 }
 
+/* Simple horizontal bar chart used for outcome flow. */
 .bars {
   display: grid;
   gap: 14px;
@@ -395,6 +429,7 @@ th {
   text-align: right;
 }
 
+/* Distribution summary cards. */
 .dist-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -421,6 +456,7 @@ th {
   font-size: 1.3rem;
 }
 
+/* API error display. */
 .error {
   padding: 10px 12px;
   color: #ffe4e8;
@@ -429,10 +465,12 @@ th {
   border-radius: 6px;
 }
 
+/* Empty-state panel. */
 .empty {
   padding: 24px;
 }
 
+/* Tablet layout: sidebar stacks above content and grids collapse. */
 @media (max-width: 1180px) {
   .shell {
     grid-template-columns: 1fr;
@@ -453,6 +491,7 @@ th {
   }
 }
 
+/* Mobile layout: single-column everything, with readable chart labels. */
 @media (max-width: 720px) {
   .content {
     padding: 18px;

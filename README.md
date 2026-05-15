@@ -18,8 +18,8 @@ be identified early enough to shadow.
   - wallet leaderboard
   - distribution stats
 - `lib/polymarket.ts` contains API normalization and analytics helpers.
-- `src/` still contains the earlier Python research code, which can be reused
-  later for heavier data science, ingestion jobs, and model training.
+- The old Python/Streamlit bot files were removed so the repo reflects the
+  current Next.js analyzer direction.
 
 ## Run
 
