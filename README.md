@@ -1,311 +1,66 @@
-# BTC 5-Min Paper Trading Bot
+# Polymarket Trade-Flow Analyzer
 
-A **paper trading bot for Bitcoin (BTC)** using 5-minute markets from Polymarket. It predicts short-term price movements and simulates trades without using real money.
+A Next.js research dashboard for inspecting Polymarket market activity, recent
+trades, wallet behavior, and early shadow-signal ideas.
 
----
+The project has pivoted away from a BTC paper trading bot. The new goal is to
+search any Polymarket market, watch who is trading what, study the distributions
+active wallets follow, and eventually model whether high-performing wallets can
+be identified early enough to shadow.
 
-## Features
+## Current App
 
-- Fetch BTC 5-minute markets from Polymarket Gamma API
-- Feature engineering: returns, log returns, rolling averages, volatility, lag features
-- Predict direction (UP / DOWN) using ML models (Random Forest by default)
-- Paper trading simulation with cash, position, and portfolio value
-- Live dashboard with predictions, trades, and portfolio chart
-- Fully plug-and-play for BTC 5-min marketsCsAAegrhetjyhj
+- `app/page.tsx` is the main Next.js dashboard.
+- `app/api/markets/route.ts` searches Polymarket Gamma events.
+- `app/api/trades/route.ts` fetches recent public trades and returns:
+  - trade tape rows
+  - market flow summary
+  - wallet leaderboard
+  - distribution stats
+- `lib/polymarket.ts` contains API normalization and analytics helpers.
+- `src/` still contains the earlier Python research code, which can be reused
+  later for heavier data science, ingestion jobs, and model training.
 
----
+## Run
 
-## Project Structure
-```
-poly/
-│── app.py              # Streamlit dashboard (root)
-│── config.yaml         # Bot configuration (markets, data paths, thresholds)
-│── src/
-│   ├── __init__.py     # Empty, marks src as Python module
-│   ├── fetch.py        # Fetches BTC 5-min market data from Gamma API
-│   ├── features.py     # Feature engineering for ML models
-│   ├── predict.py      # Predict BTC direction (UP/DOWN) using features
-│   ├── trading.py      # Paper trading logic, manages portfolio & trades
-│   ├── load_config.py  # Loads config.yaml safely
-│   └── train.py        # Train ML model (Random Forest / Logistic Regression)
-│── data/               # Stores market data, features, and trades
-│── models/             # Stores trained ML models
-│── requirements.txt    # Python dependencies
-```
-
----
-
-## Installation
-
-1. **Clone the repo:**
 ```bash
-git clone <repo_url>
-cd polymarket-5-min-bot-trader
+npm install
+npm run dev
 ```
 
-2. **Create a virtual environment:**
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
-
-3. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Configuration (`config.yaml`)
-```yaml
-markets:
-  default_market: "btc-updown-5m-1773817200"  # BTC 5-min slug
-  api_base: "https://gamma-api.polymarket.com"
-
-data:
-  market_csv: "data/market_data.csv"
-  features_csv: "data/features.csv"
-  trades_csv: "data/trades.csv"
-
-models:
-  model_path: "models/model.pkl"
-
-training:
-  model_name: "random_forest"
-  test_size: 0.2
-  random_state: 42
-
-trading:
-  starting_cash: 10000.0
-  buy_threshold: 0.55
-  sell_threshold: 0.5
-```
-
-> **Note:** For automated trading across new 5-min periods, you can later implement dynamic slug discovery.
-
----
-
-## File Documentation
-
-### `src/fetch.py`
-
-Handles all data fetching from the Polymarket Gamma API.
-
-**Functions:**
-
-- `get_current_5m_timestamp()` — Returns current UTC timestamp floored to nearest 5 minutes.
-- `fetch_market(asset="btc", timestamp=None)` — Fetches market data for BTC 5-min. Returns a dictionary with: `asset`, `slug`, `up_price`, `down_price`, `volume`, `end_date`.
-
----
-
-### `src/features.py`
-
-Performs feature engineering on market price data.
-
-**Features include:**
-
-- `return`, `log_return`
-- Rolling averages: `ma_3`, `ma_5`
-- Volatility: `vol_3`, `vol_5`
-- Lagged features: `lag_1`, `lag_2`, `lag_3`
-
-**Output:** Cleaned pandas DataFrame ready for ML models.
-
----
-
-### `src/load_config.py`
-
-Safely loads `config.yaml`. Returns a dictionary with all configuration parameters. Raises errors if the file is missing or YAML is invalid.
-
----
-
-### `src/predict.py`
-
-Uses latest market data to predict BTC direction.
-
-- Predicts `UP` if `up_price > down_price`
-- Returns a `(direction, probability)` tuple
-- Fully self-contained — no circular imports
-
----
-
-### `src/trading.py`
-
-Implements paper trading logic.
-
-**Tracks:**
-- Cash
-- Position
-- Portfolio value
-- Trade history
-
-`PaperTrader.step()` executes one trading step: calls `predict_for_market()`, buys if probability > threshold, sells otherwise.
-
----
-
-### `src/train.py`
-
-Trains an ML model to predict next-5-minute BTC direction.
-
-- Modular: `get_model(model_name)` returns an sklearn-like estimator (Random Forest or Logistic Regression)
-- Creates binary target based on future price movement
-- Handles train/test split, evaluation metrics, and saves model to `models/model.pkl`
-
----
-
-### `app.py`
-
-Streamlit dashboard for live monitoring.
-
-**Displays:**
-- Latest BTC 5-min prediction
-- Portfolio overview
-- Last 20 trades
-- Portfolio value chart
-
-Includes a **Reset Portfolio** button. Fully plug-and-play with BTC 5-min markets.
-
----
-
-## Running the Bot
-```bash
-streamlit run app.py
-```
-
-- Open the URL in your browser (default: `http://localhost:8501`)
-- The dashboard shows live predictions and the portfolio chart
-- Each "step" simulates trading on the latest BTC 5-min market
-
----
-
-## Rolling BTC 5-Minute Markets
-
-The bot now discovers Polymarket's rolling BTC 5-minute markets automatically.
-You do not need to paste or update market slugs by hand.
-
-```python
-from src.fetch import fetch_current_market, fetch_next_market, discover_5m_markets
-
-current_market = fetch_current_market("btc")
-next_market = fetch_next_market("btc")
-upcoming_markets = discover_5m_markets("btc", periods=12)
-```
-
-Polymarket's BTC market slugs follow this pattern:
+Open:
 
 ```text
-btc-updown-5m-<unix_timestamp_floored_to_5_minutes>
+http://localhost:3000
 ```
 
-`PaperTrader` uses `market_mode="next"` by default, so paper trading targets the
-next available 5-minute market instead of forcing you to catch the current
-window at exactly the right moment.
+## Product Direction
 
----
+The core research question is:
 
-## Getting Training Data
-
-Fetch 5-minute BTC candles from the Binance public API and build feature rows:
-
-```bash
-python -m src.data_fetch --source binance --symbol BTCUSDT --interval 5m --start 2026-01-01
+```text
+Can we identify wallets or wallet clusters with repeatable behavior before
+their trades become obvious in market prices?
 ```
 
-If Binance.com is blocked in your region, use the Binance US endpoint:
+Near-term build path:
 
-```bash
-python -m src.data_fetch --source binance_us --symbol BTCUSDT --interval 5m --start 2026-01-01
+1. Add Postgres tables for markets, trades, wallets, wallet snapshots, and model
+   runs.
+2. Move ingestion into Python/FastAPI workers.
+3. Keep Next.js as the product UI.
+4. Add wallet history pages and distributions by market category.
+5. Backtest shadow signals against latency, slippage, and sample-size bias.
+
+## Target Stack
+
+```text
+Next.js + React + TypeScript frontend
+Python + FastAPI backend
+Postgres database
+Python workers for ingestion and modeling
+Redis later for queues/pubsub/cache
 ```
 
-This writes:
-
-- `data/market_data.csv` — raw OHLCV candles
-- `data/features.csv` — engineered model features
-
-Train the model from the fetched candles:
-
-```bash
-python -m src.train --input data/market_data.csv
-```
-
-Training saves an ensemble artifact to `models/model.pkl`. The Streamlit app
-loads that file at runtime and does not retrain on page load. To refresh the
-model after fetching newer candles, rerun:
-
-```bash
-python -m src.train --input data/market_data.csv --model-name ensemble
-```
-
-The saved artifact includes:
-
-- baseline logistic regression
-- random forest
-- extra trees
-- histogram gradient boosting
-- recent-window random forest
-- test metrics and model probabilities for dashboard display
-
-## Continuous Data Collection
-
-Run one collection cycle to append the latest BTC ticker snapshot, merge recent
-5-minute candles into `data/market_data.csv`, store current/next Polymarket
-implied probabilities, and rebuild `data/features.csv`:
-
-```bash
-python -m src.collector --once
-```
-
-Run continuously:
-
-```bash
-python -m src.collector --poll-seconds 60
-```
-
-Optionally retrain the saved ensemble every few hours:
-
-```bash
-python -m src.collector --poll-seconds 60 --retrain-minutes 180
-```
-
-The collector writes:
-
-- `data/live_ticker.csv` — timestamped BTC ticker snapshots
-- `data/polymarket_markets.csv` — non-leaky current/next market snapshots collected going forward
-- `data/trader_signals.csv` — public-wallet trade flow and smart-money aggregate features
-- `data/trader_leaders.csv` — hashed public-wallet summaries used for trader-flow diagnostics
-- `data/market_data.csv` — deduplicated 5-minute candles
-- `data/features.csv` — regenerated feature rows
-- `models/model.pkl` — refreshed only when `--retrain-minutes` is set
-
-To expand BTC candle history back to January 2026:
-
-```bash
-python -m src.data_fetch --source binance --symbol BTCUSDT --interval 5m --start 2026-01-01 --end 2026-04-30
-```
-
-Historical Polymarket markets should not be blindly backfilled after resolution:
-closed markets may expose final outcomes rather than pre-close prices, which
-would leak the answer into training. The collector records Polymarket prices
-live from now onward so those features are safe.
-
-Trader-flow features use public Polymarket wallet addresses only as anonymous
-addresses. The dashboard displays hashed wallet identifiers, not profile names
-or personal identity guesses.
-
-For deeper prediction-market research, Jon Becker's
-[`prediction-market-analysis`](https://github.com/Jon-Becker/prediction-market-analysis)
-project provides a large Polymarket/Kalshi dataset and indexers. That dataset is
-excellent for market microstructure research, but the compressed archive is very
-large, so this bot starts with lightweight BTC OHLCV candles and can ingest that
-archive later if needed.
-
----
-
-## Notes for Later
-
-- `fetch.py` uses slug-based fetching → ensures 5-min markets are always correctly retrieved
-- `predict.py` can be upgraded to Random Forest or Neural Network in the future
-- `trading.py` is paper-only — no real money trading
-- `features.py` prepares data for ML training with rolling statistics
-- `train.py` handles the full model lifecycle: features → train → save → evaluate
+This repo currently starts with the Next.js UI and API routes so the interface
+can evolve quickly before the backend is split out.

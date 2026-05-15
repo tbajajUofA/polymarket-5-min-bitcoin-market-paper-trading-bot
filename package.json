@@ -1,0 +1,23 @@
+{
+  "name": "polymarket-flow-analyzer",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node node_modules/next/dist/bin/next dev",
+    "build": "node node_modules/next/dist/bin/next build",
+    "start": "node node_modules/next/dist/bin/next start",
+    "lint": "node node_modules/next/dist/bin/next lint",
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.typecheck.json --noEmit"
+  },
+  "dependencies": {
+    "next": "16.2.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "25.0.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

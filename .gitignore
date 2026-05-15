@@ -32,6 +32,16 @@ models/*.pkl
 .env
 # ////////////// GPT Recommends
 
+# Next.js / Node
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
